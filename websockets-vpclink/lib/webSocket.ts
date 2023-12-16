@@ -22,15 +22,17 @@ export class WebSocket extends Construct {
     constructor(scope: Construct, id: string, props: WebSocketProps) {
         super(scope, id);
 
-        this.nlb = new NetworkLoadBalancer(this, 'services-nlb', {
+        this.nlb = new NetworkLoadBalancer(this, 'api-nlb', {
             vpc: props.vpc,
             internetFacing: false,
-            loadBalancerName: 'services-nlb',
+            loadBalancerName: 'api-nlb',
             vpcSubnets: {subnetGroupName: "Private"}
         });
 
-        this.listener = this.nlb.addListener('services-listener-nlb', {
-            port: 80
+        const port = 80;
+
+        this.listener = this.nlb.addListener('api-listener-nlb', {
+            port: port
         });
 
         const vpcNlbLink = new CfnVpcLink(this, "vpc-link-nlb", {
@@ -41,10 +43,10 @@ export class WebSocket extends Construct {
 
         const targetGroupNlb = this.listener.addTargets('handler-nlb-group', {
             targetGroupName: 'handler-nlb-target',
-            port: 80,
+            port: port,
             targets: [props.fargateService],
             healthCheck: {
-                port: '80',
+                port: port.toString(),
                 interval: Duration.seconds(60),
                 timeout: Duration.seconds(5)
             }
@@ -72,7 +74,7 @@ export class WebSocket extends Construct {
         });
 
         // AccessDeniedException:
-        // User: arn:aws:sts::677805137000:assumed-role/plowops-dev-plowopsservicesclusterdevplowopsntstes-1SY12A8WQIJMN/dcd5e61ae5894cc98b4500598454c419
+        // User: arn:aws:sts::677805137000:assumed-role/....
         // is not authorized to perform: execute-api:Invoke on resource:
         // arn:aws:execute-api:us-east-1:********7000:w1sk4tjx8j/production/POST/production/@connections/KO7AjfXIoAMCJWg%3D
         const apiWildcardArn = `arn:aws:execute-api:${Stack.of(this).region}:${Stack.of(this).account}:${webSocketApi.ref}/${stage.ref}/POST/@connections/*}`;
@@ -86,11 +88,14 @@ export class WebSocket extends Construct {
         // NLB requires connections to be allowed from everywhere
         // TODO: it should be restricted to private subnets CIDR
         props.fargateService.connections.allowFromAnyIpv4(
-            Port.tcp(80),
-            `Allow traffic from everywhere 80`
+            Port.tcp(port),
+            `Allow traffic from everywhere ${port}`
         );
 
-        const integrationUri = `http://${this.nlb.loadBalancerDnsName}${props.apiUrlPrefix}/ws`;
+        let integrationUri = `http://${this.nlb.loadBalancerDnsName}${props.apiUrlPrefix}/ws`;
+        if (props.environment === 'local'){
+            integrationUri = `http://${this.nlb.loadBalancerDnsName}:${port}${props.apiUrlPrefix}/ws`;
+        }
 
         // ============= Web sockets - connection
         const webSocketAuthorizer = new WebSocketAuthorizer(this, "web-socket-authorizer", {
@@ -107,7 +112,7 @@ export class WebSocket extends Construct {
             connectionId: vpcNlbLink.attrVpcLinkId,
             integrationType: 'HTTP',
             integrationUri: integrationUri,
-            integrationMethod: "PUT",
+            integrationMethod: "GET",
             requestParameters: {
                 'integration.request.header.tenantid': 'context.authorizer.tenantid',
                 'integration.request.header.X-Websocket-ConnectionId': 'context.connectionId',

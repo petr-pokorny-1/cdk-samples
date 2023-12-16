@@ -34,9 +34,13 @@ async function testWebSocket(config: Config, token: string) {
 
     const ws = new WebSocketClient(webSocketUrl, token);
     await ws.connect();
+    console.log("Getting message promise..");
     const messagePromise = ws.getMessage();
-    console.log("Waiting for message...");
-    await messagePromise;
+    console.log("Sending message...");
+    await ws.sendMessage('{"action": "message", "data": "data-value"}');
+    console.log("Waiting for response...");
+    const response = await messagePromise;
+    console.log("Response:", response);
     ws.close();
 }
 

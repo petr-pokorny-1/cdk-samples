@@ -1,5 +1,5 @@
 import { Config } from "./config";
-import { WebSocket } from "ws";
+import {Data, WebSocket} from "ws";
 
 export class WebSocketClient {
     private readonly ws: WebSocket;
@@ -27,13 +27,13 @@ export class WebSocketClient {
           });
     }
 
-    getMessage(): Promise<void> {
+    getMessage(): Promise<Data> {
         const me = this;
-        return new Promise<void>((resolve, reject) => {
-            me.ws.onmessage = (data) => {
+        return new Promise<Data>((resolve, reject) => {
+            me.ws.onmessage = (event) => {
                 console.log('Received message');
-                console.log(data.data);
-                resolve();
+                console.log(event.data);
+                resolve(event.data);
             }
 
             me.ws.onerror = (err) => {
@@ -42,6 +42,19 @@ export class WebSocketClient {
                 reject();
             }
           });
+    }
+
+    sendMessage(data: string): Promise<void> {
+        const me = this;
+        return new Promise<void>((resolve, reject) => {
+            me.ws.send (data, (err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve()
+                }
+            });
+        });
     }
 
     close() {
