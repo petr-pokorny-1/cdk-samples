@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  localstack:
+    container_name: localstack
+    image: localstack/localstack-pro:3.0.2
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+      - "127.0.0.1:53:53"                # DNS config (required for Pro)
+      - "127.0.0.1:53:53/udp"            # DNS config (required for Pro)
+      - "127.0.0.1:443:443"              # LocalStack HTTPS Gateway (required for Pro)
+    environment:
+      DEBUG: ${DEBUG}
+      LS_LOG: ${LS_LOG}
+      PERSISTENCE: 0
+      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN}
+      DOCKER_HOST: unix:///var/run/docker.sock
+      ECS_REMOVE_CONTAINERS: 0
+      LAMBDA_DOCKER_NETWORK: shared-network
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:4566/_localstack/health?reload"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+networks:
+  default:
+    driver: bridge
+    name: shared-network
