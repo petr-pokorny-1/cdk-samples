@@ -20,3 +20,4 @@ build
 /core/dashboard/.angular
 
 
+websockets-vpclink/integrationTest/test.sh
