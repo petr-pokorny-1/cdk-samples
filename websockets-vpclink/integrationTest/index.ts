@@ -11,14 +11,14 @@ import { WebSocketClient } from "./webSocketClient";
         const users = new Users(config);
 
         const user: IUser = {
-            login: "admin@test.com",
+            login: "admin1@test.com",
             password: "Password123#",
             givenName: "Admin",
-            familyName: "User"
+            familyName: "User",
+            tenantId: "888"
         };
         await users.createUser(user);
         await users.addUserToRole(user.login, "Admin");
-
 
         let token = await users.getToken(user.login, user.password);
         console.log("Id token", token);

@@ -15,4 +15,17 @@ npm run cdk-bootstrap-local
 2. Deploy
 
 
-curl -X PUT "http://services-nlb.elb.localhost.localstack.cloud/api/ws?Authorization=eyJhbGciOiJSUzI1NiIsImtpZCI6IjcwNzgxOWM0LTZiMzgtNDhlYy05Y2ZlLTU1YzYxMDhjNmY2ZCIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDI2ODE4MzAsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3QubG9jYWxzdGFjay5jbG91ZDo0NTY2L3VzLWVhc3QtMV9lNmEwZDFlZTA1ZTk0YjVmYjZhNjYwN2ZjNzIwNTkxMyIsInN1YiI6ImExMDI2MTdmLTEwM2MtNGQzOC1iZWMzLTVjMjEzNDFkMjU1MCIsImF1dGhfdGltZSI6MTcwMjY3ODIzMCwiaWF0IjoxNzAyNjc4MjMwLCJldmVudF9pZCI6ImExMmYzN2I2LTlhNTMtNGU4NC04YTc1LTgxZWEzOWYxODk3YyIsInRva2VuX3VzZSI6ImlkIiwiY29nbml0bzp1c2VybmFtZSI6ImFkbWluQHRlc3QuY29tIiwiZW1haWwiOiJhZG1pbkB0ZXN0LmNvbSIsImF1ZCI6Im81d2ZubjBuZHd5eW01MzhyZHM5N3oxNnd4IiwiY29nbml0bzpncm91cHMiOlsiQWRtaW4iXSwiZ2l2ZW5fbmFtZSI6IkFkbWluIiwiZmFtaWx5X25hbWUiOiJVc2VyIiwiY29nbml0bzp1c2VyX3N0YXR1cyI6IkNPTkZJUk1FRCJ9.XIT5IxbydmA278JLpJLwXF6svaP4XsRhqnG3c4Af80ewu2IZzOC3ze_JN1El4wnITZKM2E8fChBFrxncTpkWJ07fJkZoET6OyVX7LWOn-Ub13kNI2-I0v-3b2WuepC4hNsSpKs1896rMKmQcT1TBpBvhwnU2sqlbSFVJUHVf-WtluTETifgjK_CbeuxrYGDhWvY9IM-pO_bWBJXS_lcpsW0IoI5UM87iZ0b5wGDoIlA_XaH5sPxAU3p50XchCK2-nNULG6-QDYWB6c-U8EKPXj-zN2vXs0hqzU1X6Jwf_u9G6QWF-ubJC2HKSfrzWk4CoALbu-9qk9bHdSYqNoh-Ew"
+curl -X PUT "https://plxn1f2b37.execute-api.us-east-1.amazonaws.com/api/ws"
+curl -X GET "https://plxn1f2b37.execute-api.us-east-1.amazonaws.com/api/status"
+
+
+aws apigatewaymanagementapi post-to-connection \
+--connection-id QHjIJeR-IAMCKxQ= \
+--data '{"action": "message", "data": "123"}' \
+--endpoint-url https://hj5h8ewari.execute-api.us-east-1.amazonaws.com/production
+
+
+
+```sh
+aws ecs update-service --cluster test-cluster --service test-service --force-new-deployment
+```

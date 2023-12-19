@@ -4,18 +4,22 @@ import {DockerImageAsset, Platform} from "aws-cdk-lib/aws-ecr-assets";
 import path from "path";
 import {
     Cluster,
-    ContainerImage,
-    CpuArchitecture,
+    ContainerImage, CpuArchitecture,
     FargateService,
-    FargateTaskDefinition, OperatingSystemFamily,
+    FargateTaskDefinition, LogDriver, OperatingSystemFamily,
     Protocol
 } from "aws-cdk-lib/aws-ecs";
 import {DnsRecordType, PrivateDnsNamespace} from "aws-cdk-lib/aws-servicediscovery";
 import {AppClusterProps} from "./appClusterProps";
-import {RuntimePlatform} from "aws-cdk-lib/aws-ecs/lib/runtime-platform";
+import {ApplicationLoadBalancer, ListenerAction, ListenerCondition} from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import {IApplicationListener} from "aws-cdk-lib/aws-elasticloadbalancingv2/lib/alb/application-listener";
+import {Repository} from "aws-cdk-lib/aws-ecr";
+import {Duration} from "aws-cdk-lib";
 
 export class AppCluster extends Construct {
     public readonly service: FargateService;
+    public readonly listener: IApplicationListener;
+    public readonly taskDefinition: FargateTaskDefinition;
 
     constructor(scope: Construct, id: string, props: AppClusterProps) {
         super(scope, id);
@@ -25,26 +29,44 @@ export class AppCluster extends Construct {
             clusterName: "test-cluster",
             vpc: props.vpc
         });
-
-        const securityGroup = new SecurityGroup(this, "services-sg", {
+        const alb = new ApplicationLoadBalancer(this, 'alb', {
             vpc: props.vpc,
-            allowAllOutbound: true
+            internetFacing: false
         });
 
         // ecs task
-        const dockerAsset = new DockerImageAsset(this, 'api-image', {
-            directory: path.join(__dirname, '..', 'api'),
-            buildArgs: { 'PLATFORM': 'linux/amd64' }
+        let platform = Platform.LINUX_AMD64;
+        let cpuArchitecture = CpuArchitecture.X86_64;
+        if (props.environment === 'local' && process.arch === 'arm64'){
+            platform = Platform.LINUX_ARM64;
+            cpuArchitecture = CpuArchitecture.ARM64;
+        }
+
+        const taskDefinition = new FargateTaskDefinition(this,'task-definition',{
+            cpu: 256,
+            memoryLimitMiB: 512,
+            runtimePlatform: {
+                cpuArchitecture: cpuArchitecture,
+                operatingSystemFamily: OperatingSystemFamily.LINUX
+            }
         });
 
-        const taskDefinition = new FargateTaskDefinition(this,'task-definition',
-            {
-                cpu: 256,
-                memoryLimitMiB: 512
+        let containerImage: ContainerImage;
+        if (props.environment === 'local') {
+            const dockerAsset = new DockerImageAsset(this, 'api-image', {
+                directory: path.join(__dirname, '..', 'api'),
+                platform: platform
             });
+            containerImage = ContainerImage.fromDockerImageAsset(dockerAsset);
+        } else {
+            const ecrRepo = Repository.fromRepositoryName(this, 'ecr-repo', 'test/api-test');
+            containerImage = ContainerImage.fromEcrRepository(ecrRepo, 'latest');
+        }
+
         const taskContainer = taskDefinition.addContainer('container', {
             containerName: 'test-api-container',
-            image: ContainerImage.fromDockerImageAsset(dockerAsset),
+            image: containerImage,
+            logging: LogDriver.awsLogs({streamPrefix: 'api-test-logs'})
         });
         taskContainer.addPortMappings({
             containerPort: 80,
@@ -62,6 +84,10 @@ export class AppCluster extends Construct {
             }
         );
 
+        const securityGroup = new SecurityGroup(this, "services-sg", {
+            vpc: props.vpc,
+            allowAllOutbound: true
+        });
         this.service = new FargateService (
             this,
             'test-service',
@@ -78,5 +104,30 @@ export class AppCluster extends Construct {
                 }
             }
         );
+
+        const listener = alb.addListener('Listener', { port: 80 });
+        // default listener action on `/` path
+        listener.addAction('/', {
+            action: ListenerAction.fixedResponse(200, {
+                contentType: 'application/json',
+                messageBody: '{ "msg": "base route" }' //TODO:
+            })
+        });
+        const targetGroup = listener.addTargets('TargetGroup', {
+            priority: 10,
+            port: 80,
+            targets: [this.service],
+            conditions: [
+                ListenerCondition.pathPatterns(['/api*']),
+            ],
+            healthCheck: {
+                interval: Duration.seconds(60),
+                path: '/api/health',
+                timeout: Duration.seconds(5)
+            }
+        });
+
+        this.listener = listener;
+        this.taskDefinition = taskDefinition;
     }
 }

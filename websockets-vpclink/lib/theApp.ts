@@ -5,6 +5,7 @@ import {Vpc} from "aws-cdk-lib/aws-ec2";
 import {WebSocket} from "./webSocket";
 import {AppCluster} from "./appCluster";
 import {BuildConfig} from "../config";
+import {Http} from "./http";
 
 export interface TheAppProps extends cdk.StackProps {
     environment: string,
@@ -25,20 +26,26 @@ export class TheApp extends Stack {
             from: props.config.from,
             fromEmail: props.config.fromEmail
         });
-        const cluster = new AppCluster(this,'Cluster', {vpc});
 
-        const apiUrlPrefix = "/api";
+        const cluster = new AppCluster(this,'Cluster', {
+            vpc,
+            environment: props.environment
+        });
+
+        // http api
+        const http = new Http(this, 'HttpApi', {
+            vpc,
+            listener: cluster.listener
+        });
 
         // websockets
         const webSocketApi = new WebSocket(
             this, "ws-api", {
-                vpc: vpc,
-                fargateService: cluster.service,
                 userPoolId: cognito.userPoolId,
                 userPoolClientId: cognito.clientId,
-                apiUrlPrefix: apiUrlPrefix,
-                environment: props.environment
+                environment: props.environment,
+                wsApiEndpoint: `${http.apiUrl}/api/ws`,
+                taskDefinition: cluster.taskDefinition
             });
-
     }
 }
