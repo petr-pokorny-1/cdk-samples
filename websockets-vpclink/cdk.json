@@ -56,8 +56,8 @@
     },
     "aws": {
       "Environment": "aws",
-      "FromEmail": "info@neotreks.com",
-      "From": "PloOps"
+      "FromEmail": "xxx@xxx.com",
+      "From": "xxx"
     }
   }
 }
