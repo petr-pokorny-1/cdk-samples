@@ -1,4 +1,11 @@
-## Web sockets API with private link integration
+# WebSockets and HTTP API with a private integration to an Amazon ECS service
+
+Based on this tutorial
+https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-private-integration.html
+
+![Architecture](architecture.drawio.png)
+
+## Launch and test locally
 
 1. Launch localstack
 
