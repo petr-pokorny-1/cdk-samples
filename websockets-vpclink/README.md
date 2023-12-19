@@ -13,19 +13,19 @@ https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-private-in
 docker compose up
 ```
 
-1. Bootstrap
+2. Bootstrap
 
 ```bash
 npm run cdk-deploy-local
 ```
 
-1. Deploy
+3. Deploy
 
 ```bash
 npm run cdk-bootstrap-local
 ```
 
-1. Run test
+4. Run test
 
 ```bash
 cd integrationTest
@@ -38,7 +38,7 @@ ts-node index.ts
 
 ```
 
-1. Useful commands:
+## Useful commands:
 
 http tests
 
