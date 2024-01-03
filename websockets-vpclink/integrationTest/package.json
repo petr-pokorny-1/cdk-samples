@@ -9,20 +9,20 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^20.9.0",
+    "@types/node": "^20.10.6",
     "@types/ws": "^8.5.10",
-    "@typescript-eslint/eslint-plugin": "^6.11.0",
-    "@typescript-eslint/parser": "^6.11.0",
-    "eslint": "^8.53.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.3.2"
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "eslint": "^8.56.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudformation": "^3.449.0",
-    "@aws-sdk/client-cognito-identity-provider": "^3.451.0",
-    "@aws-sdk/client-eventbridge": "^3.454.0",
-    "@aws-sdk/client-dynamodb": "^3.421.0",
-    "@aws-sdk/lib-dynamodb": "^3.421.0",
-    "ws": "^8.14.2"
+    "@aws-sdk/client-cloudformation": "^3.484.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.484.0",
+    "@aws-sdk/client-eventbridge": "^3.484.0",
+    "@aws-sdk/client-dynamodb": "^3.484.0",
+    "@aws-sdk/lib-dynamodb": "^3.484.0",
+    "ws": "^8.16.0"
   }
 }

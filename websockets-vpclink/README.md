@@ -44,6 +44,9 @@ http tests
 
 ```bash
 curl -X PUT "https://plxn1f2b37.execute-api.us-east-1.amazonaws.com/api/ws"
+
+curl -v -X PUT "http://9008eb62.execute-api.localhost.localstack.cloud:4566/api/ws"
+
 curl -X GET "https://plxn1f2b37.execute-api.us-east-1.amazonaws.com/api/status"
 ```
 
