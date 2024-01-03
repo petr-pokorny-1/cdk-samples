@@ -84,7 +84,7 @@ export class Http extends Construct {
             //authorizer: routeOptions.authorizer
         });
 
-        this.apiUrl = httpApi.apiEndpoint;
+        this.apiUrl = `http://${httpApi.apiEndpoint}`;
         new CfnOutput(this, 'APIUrl', {value: this.apiUrl});
     }
 }
